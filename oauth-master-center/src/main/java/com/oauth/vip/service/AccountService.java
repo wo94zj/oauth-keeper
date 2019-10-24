@@ -16,12 +16,17 @@ import com.oauth.util.AESUtil;
 import com.oauth.util.MD5Util;
 import com.oauth.util.MediaTypeUtil;
 import com.oauth.util.SHAUtil;
+import com.oauth.util.SecretUtil;
+import com.oauth.util.StringUtil;
+import com.oauth.util.TimeUtil;
 import com.oauth.vip.cache.IVipCacheService;
+import com.oauth.vip.enums.AuthorityEnum;
 import com.oauth.vip.enums.CommonStatusEnum;
 import com.oauth.vip.pojo.Client;
 import com.oauth.vip.pojo.Vip;
 import com.oauth.vip.pojo.VipBind;
 import com.oauth.vip.service.db.ClientService;
+import com.oauth.vip.service.db.VipBindService;
 import com.oauth.vip.service.db.VipService;
 
 @Service(value = "accountService")
@@ -31,6 +36,8 @@ public class AccountService implements IAccountService {
 	private ClientService clientService;
 	@Autowired
 	private VipService vipService;
+	@Autowired
+	private VipBindService vipBindService;
 
 	@Autowired
 	private IVipCacheService vipCacheService;
@@ -57,10 +64,14 @@ public class AccountService implements IAccountService {
 			return ResultUtil.result(ResultCode.UNABLE_SECRET);
 		}
 
-		VipBind bind = vipService.selectVipBindByClientIdAndAccount(clientId, account);
+		VipBind bind = vipBindService.selectVipBindByClientIdAndAccount(clientId, account);
 		// 账户信息判断
 		if (Objects.isNull(bind)) {
 			return ResultUtil.result(ResultCode.UNABLE_LOGIN);
+		}
+		long timestamp = TimeUtil.currentMilli();
+		if(bind.getAuthStopTime() > 0 && bind.getAuthStopTime() < timestamp) {
+			return ResultUtil.result(ResultCode.AUTH_EXPIRE);
 		}
 
 		Vip vip = vipService.selectVipByAccount(account);
@@ -103,4 +114,38 @@ public class AccountService implements IAccountService {
 		return ResultUtil.failed();
 	}
 
+	
+	public BaseDto<Serializable> register(Vip vip, String clientId) {
+		vip.setStatus(CommonStatusEnum.USABLE.getStatus());
+		vip.setSalt(SecretUtil.salt());
+		vip.setPassword(SHAUtil.SHA256(vip.getPassword() + vip.getSalt()));
+		long time = TimeUtil.currentMilli();
+		vip.setUpdateTime(time);
+		vip.setCreateTime(time);
+		if(StringUtil.isBlank(vip.getNickname())) {
+			
+		}
+		if(StringUtil.isBlank(vip.getImg())) {
+			
+		}
+		
+		int vipResult = vipService.insertVip(vip);
+		if(vipResult > 0) {
+			VipBind vipBind = new VipBind();
+			vipBind.setAccount(vip.getAccount());
+			vipBind.setAuthority(AuthorityEnum.base.name());
+			vipBind.setClientId(clientId);
+			vipBind.setAuthStartTime(0L);
+			vipBind.setAuthStopTime(0L);
+			vipBind.setUpdateTime(time);
+			vipBind.setCreateTime(time);
+			
+			int bindResult = vipBindService.insertVipBind(vipBind);
+			if(bindResult > 0) {
+				return ResultUtil.success();
+			}
+		}
+		
+		return ResultUtil.failed();
+	}
 }

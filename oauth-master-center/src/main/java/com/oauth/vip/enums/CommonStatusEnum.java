@@ -2,8 +2,8 @@ package com.oauth.vip.enums;
 
 public enum CommonStatusEnum {
 
-    USABLE(0), //可用
-    DISABLED(1); //不可用
+    USABLE(1), //可用
+    DISABLED(-1); //不可用
     
     private Integer status;
     

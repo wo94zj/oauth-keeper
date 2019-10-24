@@ -6,24 +6,23 @@ import org.springframework.stereotype.Component;
 import com.oauth.dto.Account;
 import com.oauth.vip.mapper.VipMapper;
 import com.oauth.vip.pojo.Vip;
-import com.oauth.vip.pojo.VipBind;
 
 @Component
 public class VipService {
 
     @Autowired
-    private VipMapper accountMapper;
+    private VipMapper vipMapper;
     
     public Account selectAccountByClientIdAndAccount(String clientId, String account) {
-        return accountMapper.selectAccountByClientIdAndAccount(clientId, account);
+        return vipMapper.selectAccountByClientIdAndAccount(clientId, account);
     }
     
     public Vip selectVipByAccount(String account) {
-        return accountMapper.selectVipByAccount(account);
+        return vipMapper.selectVipByAccount(account);
     }
     
-    public VipBind selectVipBindByClientIdAndAccount(String clientId, String account) {
-        return accountMapper.selectVipBindByClientIdAndAccount(clientId, account);
-    }
+    public int insertVip(Vip vip) {
+    	return vipMapper.insertVip(vip);
+	}
     
 }

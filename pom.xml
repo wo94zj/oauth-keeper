@@ -86,5 +86,6 @@
 		<module>oauth-master-center</module>
 		<module>oauth-inner-ikeeper</module>
 		<module>oauth-inner-keeper-dubbo</module>
+		<module>oauth-inner-keeper-springcloud</module>
 	</modules>
 </project>
