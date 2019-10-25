@@ -34,7 +34,7 @@ dubbo调用接口
 
 ##### 外部系统
 
-普通用户注册及可访问所有外部系统。
+普通用户注册即可访问所有外部系统。
 
 ##### 合作机构
 
@@ -65,78 +65,63 @@ dubbo调用接口
 | 属性        | 类型         | 空   | 默认     | 备注                                            |
 | ----------- | ------------ | ---- | -------- | ----------------------------------------------- |
 | id          | bigint(20)   | N    | 自增     | 主键                                            |
-| nickname    | varchar(50)  | N    | 随机     | 昵称                                            |
-| account     | varchar(100) | N    | 唯一     | 用户标记                                        |
+| nickname    | varchar(50)  | N    | 规则生成 | 昵称                                            |
 | img         | varchar(255) | N    | 默认图片 | 头像地址                                        |
 | password    | varchar(255) | N    | 无       | sha256(password+salt)                           |
 | salt        | varchar(255) | N    | 随机     | 盐                                              |
+| phone       | bigint(20)   | Y    |          | 手机号                                          |
+| email       | varchar(255) | Y    |          | 邮箱                                            |
 | level       | tinyint(2)   | N    | 2        | 用户级别（0：管理者；1：内部用户；2：外部用户） |
 | status      | tinyint(2)   | N    | 1        | 状态（1：可用；-1：不可用）                     |
+| type        | enum         | N    |          | 注册类型（EMAIL；PHONE；ADMIN）                 |
 | update_time | bigint(20)   | N    | 0        | 更新时间戳，13位                                |
 | create_time | bigint(20)   | N    | 0        | 生成时间戳，13位                                |
 
-##### 客户端信息表（mc_client）
+##### 三方绑定（mc_account_thirdparty）
 
+| 属性       | 类型         | 空   | 默认 | 备注                      |
+| ---------- | ------------ | ---- | ---- | ------------------------- |
+| id         | bigint(20)   | N    |      |                           |
+| account_id | bigint(20)   | N    |      | 用户标记                  |
+| open_id    | varchar(255) | N    |      | 三方标记                  |
+| nickname   | varchar(50)  |      |      | 昵称                      |
+| sex        | tinyint(2)   |      |      | 0：保密，1：男；2：女     |
+| img        | varchar(255) |      |      |                           |
+| type       | enum         | N    |      | QQ；WX；ALI               |
+| status     | tinyint(2)   | N    |      | 状态（1：绑定；-1：解绑） |
+| updateTime | bigint(20)   | N    |      |                           |
+| createTime | bigint(20)   | N    |      |                           |
 
+##### 机构信息表（mc_client）
+
+| 属性          | 类型         | 空   | 默认 | 备注                                              |
+| ------------- | ------------ | ---- | ---- | ------------------------------------------------- |
+| id            | bigint(20)   | N    | 自增 | 主键                                              |
+| client_id     | varchar(50)  | N    |      | 机构标识                                          |
+| client_secret | varchar(255) | N    |      | 机构分配密钥                                      |
+| name          | varchar(100) | N    |      | 机构描述                                          |
+| redirect_url  | varchar(255) | N    |      | 机构地址                                          |
+| type          | enum         | N    |      | UNION：合作机构；INNER：内部系统；EXTER：外部系统 |
+| status        | tinyint(2)   | N    | 1    | 状态（1：可用；-1：不可用）                       |
+| update_time   | bigint(20)   | N    | 0    | 更新时间戳，13位                                  |
+| create_time   | bigint(20)   | N    | 0    | 生成时间戳，13位                                  |
 
 ##### 账户授权表（mc_account_bind）
+
+| 属性            | 类型         | 空   | 默认 | 备注                          |
+| --------------- | ------------ | ---- | ---- | ----------------------------- |
+| id              | bigint(20)   | N    | 自增 | 主键                          |
+| account_id      | bigint(20)   | N    |      | 用户标记                      |
+| client_id       | varchar(50)  | N    |      | 机构标识                      |
+| authority       | varchar(255) | N    |      | 权限，多个用英文逗号隔开      |
+| auth_start_time | bigint(20)   | N    | 0    | 授权时间                      |
+| auth_stop_time  | bigint(20)   | N    | 0    | 授权失效时间，写0代表永久授权 |
+| update_time     | bigint(20)   | N    | 0    | 更新时间戳，13位              |
+| create_time     | bigint(20)   | N    | 0    | 生成时间戳，13位              |
 
 #### SQL
 
 ```sql
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
 
--- ----------------------------
--- Table structure for mc_account
--- ----------------------------
-DROP TABLE IF EXISTS `mc_account`;
-CREATE TABLE `mc_account`  (
-  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nickname` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `account` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `img` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `salt` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `level` tinyint(2) UNSIGNED NOT NULL,
-  `status` tinyint(2) UNSIGNED NOT NULL,
-  `update_time` bigint(20) NOT NULL,
-  `create_time` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic STORAGE DISK;
-
--- ----------------------------
--- Table structure for mc_account_bind
--- ----------------------------
-DROP TABLE IF EXISTS `mc_account_bind`;
-CREATE TABLE `mc_account_bind`  (
-  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `account` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `client_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `authority` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `auth_start_time` bigint(20) NOT NULL,
-  `auth_stop_time` bigint(20) NOT NULL,
-  `update_time` bigint(20) NOT NULL,
-  `create_time` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic STORAGE DISK;
-
--- ----------------------------
--- Table structure for mc_client
--- ----------------------------
-DROP TABLE IF EXISTS `mc_client`;
-CREATE TABLE `mc_client`  (
-  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `client_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `client_secret` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `redirect_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `status` tinyint(2) UNSIGNED NOT NULL,
-  `update_time` bigint(20) NOT NULL,
-  `create_time` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic STORAGE DISK;
-
-SET FOREIGN_KEY_CHECKS = 1;
 ```
 
