@@ -21,6 +21,6 @@ public class DubboAccountServiceTest {
 	public void loginTest() {
 		//DataSource
 		String str = "password=123456&timestamp=" + TimeUtil.currentMilli();
-		System.out.println(dubboAccountService.login("zhaoj", "vc-traders", AESUtil.encrypt(str, "3381229f1beb087e92d924e65f63e649503fdb74304c632b604af9d2275ce09e")));
+		System.out.println(dubboAccountService.signLogin("zhaoj", "vc-traders", AESUtil.encrypt(str, "3381229f1beb087e92d924e65f63e649503fdb74304c632b604af9d2275ce09e")));
 	}
 }

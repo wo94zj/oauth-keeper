@@ -17,11 +17,6 @@ public class DubboAccountService implements IAccountService {
 	private IAccountService accountService;
 	
 	@Override
-	public BaseDto<Serializable> login(String account, String clientId, String sign) {
-		return accountService.login(account, clientId, sign);
-	}
-
-	@Override
 	public BaseDto<Serializable> logout(String account, String clientId, String token, String sign) {
 		return accountService.logout(account, clientId, token, sign);
 	}
@@ -29,6 +24,16 @@ public class DubboAccountService implements IAccountService {
 	@Override
 	public BaseDto<Serializable> checkToken(String account, String clientId, String token, String sign) {
 		return accountService.checkToken(account, clientId, token, sign);
+	}
+
+	@Override
+	public BaseDto<Serializable> signLogin(String account, String clientCode, String sign) {
+		return accountService.signLogin(account, clientCode, sign);
+	}
+
+	@Override
+	public BaseDto<Serializable> pwdLogin(String phone, String password, String clientCode) {
+		return accountService.pwdLogin(phone, password, clientCode);
 	}
 
 }

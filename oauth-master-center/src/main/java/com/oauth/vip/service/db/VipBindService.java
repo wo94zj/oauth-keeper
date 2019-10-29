@@ -12,8 +12,8 @@ public class VipBindService {
 	@Autowired
     private VipBindMapper vipBindMapper;
 	
-	public VipBind selectVipBindByClientIdAndAccount(String clientId, String account) {
-        return vipBindMapper.selectVipBindByClientIdAndAccount(clientId, account);
+	public VipBind selectVipBindByClientCodeAndAccountId(String clientCode, long accountId) {
+        return vipBindMapper.selectVipBindByClientCodeAndAccountId(clientCode, accountId);
     }
 	
 	public int insertVipBind(VipBind vipBind) {

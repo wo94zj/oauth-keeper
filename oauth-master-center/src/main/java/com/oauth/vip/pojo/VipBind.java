@@ -13,9 +13,9 @@ public class VipBind implements Serializable {
     
     private static final long serialVersionUID = -6714493783060675694L;
 
-    private Integer id;
-    private String account;
-    private String clientId;
+    private Long id;
+    private Long accountId;
+    private String clientCode;
     
     //权限，多个用英文逗号隔开
     private String authority;

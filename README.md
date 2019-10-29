@@ -69,11 +69,9 @@ dubbo调用接口
 | img         | varchar(255) | N    | 默认图片 | 头像地址                                        |
 | password    | varchar(255) | N    | 无       | sha256(password+salt)                           |
 | salt        | varchar(255) | N    | 随机     | 盐                                              |
-| phone       | bigint(20)   | Y    |          | 手机号                                          |
-| email       | varchar(255) | Y    |          | 邮箱                                            |
+| phone       | char(11)     | N    |          | 手机号                                          |
 | level       | tinyint(2)   | N    | 2        | 用户级别（0：管理者；1：内部用户；2：外部用户） |
 | status      | tinyint(2)   | N    | 1        | 状态（1：可用；-1：不可用）                     |
-| type        | enum         | N    |          | 注册类型（EMAIL；PHONE；ADMIN）                 |
 | update_time | bigint(20)   | N    | 0        | 更新时间戳，13位                                |
 | create_time | bigint(20)   | N    | 0        | 生成时间戳，13位                                |
 
@@ -97,7 +95,7 @@ dubbo调用接口
 | 属性          | 类型         | 空   | 默认 | 备注                                              |
 | ------------- | ------------ | ---- | ---- | ------------------------------------------------- |
 | id            | bigint(20)   | N    | 自增 | 主键                                              |
-| client_id     | varchar(50)  | N    |      | 机构标识                                          |
+| client_code   | varchar(50)  | N    |      | 机构标识                                          |
 | client_secret | varchar(255) | N    |      | 机构分配密钥                                      |
 | name          | varchar(100) | N    |      | 机构描述                                          |
 | redirect_url  | varchar(255) | N    |      | 机构地址                                          |
@@ -112,12 +110,15 @@ dubbo调用接口
 | --------------- | ------------ | ---- | ---- | ----------------------------- |
 | id              | bigint(20)   | N    | 自增 | 主键                          |
 | account_id      | bigint(20)   | N    |      | 用户标记                      |
-| client_id       | varchar(50)  | N    |      | 机构标识                      |
+| client_code     | varchar(50)  | N    |      | 机构标识                      |
 | authority       | varchar(255) | N    |      | 权限，多个用英文逗号隔开      |
 | auth_start_time | bigint(20)   | N    | 0    | 授权时间                      |
 | auth_stop_time  | bigint(20)   | N    | 0    | 授权失效时间，写0代表永久授权 |
 | update_time     | bigint(20)   | N    | 0    | 更新时间戳，13位              |
 | create_time     | bigint(20)   | N    | 0    | 生成时间戳，13位              |
+
+> 1. 内部用户访问内部系统需要管理者授权
+> 2. 外部用户登录合作机构需要用户授权
 
 #### SQL
 

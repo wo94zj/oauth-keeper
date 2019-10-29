@@ -8,6 +8,6 @@ import com.oauth.vip.pojo.Client;
 @Mapper
 public interface ClientMapper {
 
-    @Select("SELECT * FROM mc_client WHERE client_id=#{clientId}")
-    Client selectClientByClientId(String clientId);
+    @Select("SELECT * FROM mc_client WHERE client_code=#{clientCode}")
+    Client selectClientByClientCode(String clientCode);
 }

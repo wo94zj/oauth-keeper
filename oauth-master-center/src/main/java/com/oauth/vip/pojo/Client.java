@@ -11,8 +11,8 @@ import lombok.Data;
 @Data
 public class Client {
 
-    private Integer id;
-    private String clientId;	//机构标识
+    private Long id;
+    private String clientCode;	//机构标识
     private String clientSecret;	//机构分配密钥
     
     private String name;	//机构描述

@@ -12,7 +12,7 @@ public class ClientService {
     @Autowired
     private ClientMapper clientMapper;
     
-    public Client selectClientByClientId(String clientId) {
-        return clientMapper.selectClientByClientId(clientId);
+    public Client selectClientByClientCode(String clientCode) {
+        return clientMapper.selectClientByClientCode(clientCode);
     }
 }

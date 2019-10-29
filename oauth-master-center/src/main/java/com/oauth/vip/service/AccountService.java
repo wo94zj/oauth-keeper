@@ -20,8 +20,8 @@ import com.oauth.util.SecretUtil;
 import com.oauth.util.StringUtil;
 import com.oauth.util.TimeUtil;
 import com.oauth.vip.cache.IVipCacheService;
-import com.oauth.vip.enums.AuthorityEnum;
 import com.oauth.vip.enums.CommonStatusEnum;
+import com.oauth.vip.enums.VipLevelEnum;
 import com.oauth.vip.pojo.Client;
 import com.oauth.vip.pojo.Vip;
 import com.oauth.vip.pojo.VipBind;
@@ -42,9 +42,12 @@ public class AccountService implements IAccountService {
 	@Autowired
 	private IVipCacheService vipCacheService;
 
+	/**
+	 * 内部机构接口调用登录
+	 */
 	@Override
-	public BaseDto<Serializable> login(String account, String clientId, String sign) {
-		Client client = clientService.selectClientByClientId(clientId);
+	public BaseDto<Serializable> signLogin(String phone, String clientCode, String sign) {
+		Client client = clientService.selectClientByClientCode(clientCode);
 
 		// 客户端是否可用
 		if (Objects.isNull(client) || client.getStatus() == CommonStatusEnum.DISABLED.getStatus()) {
@@ -64,7 +67,8 @@ public class AccountService implements IAccountService {
 			return ResultUtil.result(ResultCode.UNABLE_SECRET);
 		}
 
-		VipBind bind = vipBindService.selectVipBindByClientIdAndAccount(clientId, account);
+		return loginValid(phone, password, client);
+		/*VipBind bind = vipBindService.selectVipBindByClientIdAndAccount(clientId, account);
 		// 账户信息判断
 		if (Objects.isNull(bind)) {
 			return ResultUtil.result(ResultCode.UNABLE_LOGIN);
@@ -93,7 +97,72 @@ public class AccountService implements IAccountService {
 		dtoMap.put("account", vip.buildAccount());
 		dtoMap.put("token", token);
 
-		return ResultUtil.success(dtoMap);
+		return ResultUtil.success(dtoMap);*/
+	}
+	
+	public BaseDto<Serializable> pwdLogin(String phone, String password, String clientCode) {
+		Client client = clientService.selectClientByClientCode(clientCode);
+		// 客户端是否可用
+		if (Objects.isNull(client) || client.getStatus() == CommonStatusEnum.DISABLED.getStatus()) {
+			return ResultUtil.result(ResultCode.UNABLE_CLIENT);
+		}
+		
+		return loginValid(phone, password, client);
+	}
+	
+	private BaseDto<Serializable> loginValid(String phone, String password, Client client) {
+		//帐户是否可用
+		Vip vip = vipService.selectVipByPhone(phone);
+		if (vip.getStatus() == CommonStatusEnum.DISABLED.getStatus()) {
+			return ResultUtil.result(ResultCode.UNABLE_ACOUNT);
+		}
+
+		
+		// 密码验证
+		String sha256 = SHAUtil.SHA256(password + vip.getSalt());
+		if (!vip.getPassword().equals(sha256)) {
+			return ResultUtil.result(ResultCode.CHECK_FAILED);
+		}
+		
+		HashMap<String, Object> dtoMap = new HashMap<>();
+		dtoMap.put("account", vip);
+		
+		// 获取token
+		long timestamp = TimeUtil.currentMilli();
+		String token = MD5Util.md5(client.getClientCode() + phone + timestamp);
+		token = vipCacheService.cacheToken(client.getClientCode(), phone, token);
+		dtoMap.put("token", token);
+		
+		//1. 帐户level是否和机构type匹配
+		switch (client.getType()) {
+		case INNER:
+			//内部系统判断内部帐户是否有权限
+			if(VipLevelEnum.INNER.getType().equals(vip.getLevel())) {
+				VipBind vipBind = vipBindService.selectVipBindByClientCodeAndAccountId(client.getClientCode(), vip.getId());
+				if(vipBind.getAuthStopTime().equals(0L)) {//授权时间比较
+					return ResultUtil.success(dtoMap);
+				}
+				
+				return ResultUtil.result(ResultCode.AUTH_EXPIRE);
+			}else if (VipLevelEnum.KEEPER.getType().equals(vip.getLevel())) {
+				return ResultUtil.success(dtoMap);
+			}
+			
+			return ResultUtil.result(ResultCode.NOT_AUTH);
+		case UNION:
+			//提示需要用户授权
+			break;
+		case EXTER:
+			if(VipLevelEnum.EXTER.getType().equals(vip.getLevel())) {
+				return ResultUtil.success(dtoMap);
+			}
+			
+			return ResultUtil.result(ResultCode.NOT_AUTH);
+		default:
+			break;
+		}
+		
+		return ResultUtil.result(ResultCode.CHECK_FAILED);
 	}
 
 	@Override
@@ -114,8 +183,11 @@ public class AccountService implements IAccountService {
 		return ResultUtil.failed();
 	}
 
-	
-	public BaseDto<Serializable> register(Vip vip, String clientId) {
+	/**
+	 * 外部用户需要走注册
+	 */
+	public BaseDto<Serializable> register(Vip vip, String clientCode) {
+		vip.setLevel(VipLevelEnum.EXTER.getType());
 		vip.setStatus(CommonStatusEnum.USABLE.getStatus());
 		vip.setSalt(SecretUtil.salt());
 		vip.setPassword(SHAUtil.SHA256(vip.getPassword() + vip.getSalt()));
@@ -131,21 +203,8 @@ public class AccountService implements IAccountService {
 		
 		int vipResult = vipService.insertVip(vip);
 		if(vipResult > 0) {
-			VipBind vipBind = new VipBind();
-			vipBind.setAccount(vip.getAccount());
-			vipBind.setAuthority(AuthorityEnum.base.name());
-			vipBind.setClientId(clientId);
-			vipBind.setAuthStartTime(0L);
-			vipBind.setAuthStopTime(0L);
-			vipBind.setUpdateTime(time);
-			vipBind.setCreateTime(time);
-			
-			int bindResult = vipBindService.insertVipBind(vipBind);
-			if(bindResult > 0) {
-				return ResultUtil.success();
-			}
+			return ResultUtil.success();
 		}
-		
 		return ResultUtil.failed();
 	}
 }

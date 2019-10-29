@@ -17,11 +17,12 @@ public class Vip implements Serializable {
     
     private Long id;
     private String nickname;	//昵称
-    private String account;	//用户标记
     private String img;	//头像
     
     private String password;	//密码
     private String salt;	//加盐
+    
+    private String phone;	//手机号
     
     private Integer level;	//用户标记，见VipLevelEnum
     
@@ -32,7 +33,6 @@ public class Vip implements Serializable {
     
     public Account buildAccount() {
     	Account account =  new Account();
-    	account.setAccount(this.account);
     	account.setNickname(nickname);
     	account.setImg(img);
     	return account;
