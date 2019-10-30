@@ -16,11 +16,14 @@ public class Vip implements Serializable {
     private static final long serialVersionUID = -1584452090599765954L;
     
     private Long id;
+    
     private String nickname;	//昵称
+    
     private String img;	//头像
     
     private String password;	//密码
     private String salt;	//加盐
+    
     
     private String phone;	//手机号
     
@@ -30,6 +33,8 @@ public class Vip implements Serializable {
     
     private Long updateTime;
     private Long createTime;
+    
+    public interface Create{}
     
     public Account buildAccount() {
     	Account account =  new Account();

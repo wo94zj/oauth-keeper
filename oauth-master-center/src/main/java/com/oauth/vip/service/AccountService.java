@@ -165,9 +165,43 @@ public class AccountService implements IAccountService {
 		return ResultUtil.result(ResultCode.CHECK_FAILED);
 	}
 
+	public BaseDto<Serializable> verificationCodeLogin(String phone, String password, String clientCode) {
+		Client client = clientService.selectClientByClientCode(clientCode);
+		// 客户端是否可用
+		if (Objects.isNull(client) || client.getStatus() == CommonStatusEnum.DISABLED.getStatus()) {
+			return ResultUtil.result(ResultCode.UNABLE_CLIENT);
+		}
+		
+		Vip vip = vipService.selectVipByPhone(phone);
+		if(Objects.isNull(vip)) {
+			vip = new Vip();
+			vip.setPhone(phone);
+			vip.setLevel(VipLevelEnum.EXTER.getType());
+			vip.setStatus(CommonStatusEnum.USABLE.getStatus());
+			long time = TimeUtil.currentMilli();
+			vip.setUpdateTime(time);
+			vip.setCreateTime(time);
+			int vipResult = vipService.insertVip(vip);
+			if(vipResult <= 0) {
+				return ResultUtil.failed();
+			}
+		}
+		
+		HashMap<String, Object> dtoMap = new HashMap<>();
+		dtoMap.put("account", vip);
+		
+		// 获取token
+		long timestamp = TimeUtil.currentMilli();
+		String token = MD5Util.md5(client.getClientCode() + phone + timestamp);
+		token = vipCacheService.cacheToken(client.getClientCode(), phone, token);
+		dtoMap.put("token", token);
+		
+		return ResultUtil.success(dtoMap);
+	}
+	
 	@Override
-	public BaseDto<Serializable> logout(String account, String clientId, String token, String sign) {
-		if(vipCacheService.delToken(clientId, account, token)) {
+	public BaseDto<Serializable> logout(String account, String clientCode, String token) {
+		if(vipCacheService.delToken(clientCode, account, token)) {
 			return ResultUtil.success();
 		}
 		
@@ -175,8 +209,8 @@ public class AccountService implements IAccountService {
 	}
 
 	@Override
-	public BaseDto<Serializable> checkToken(String account, String clientId, String token, String sign) {
-		if(vipCacheService.checkToken(clientId, account, token)) {
+	public BaseDto<Serializable> checkToken(String account, String clientCode, String token) {
+		if(vipCacheService.checkToken(clientCode, account, token)) {
 			return ResultUtil.success();
 		}
 		

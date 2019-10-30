@@ -1,0 +1,27 @@
+eureka:
+  instance:
+    hostname: ${spring.cloud.client.ip-address}
+    #statusPageUrlPath: ${server.servletPath}/info
+    #healthCheckUrlPath: ${server.servletPath}/health
+  client:
+    serviceUrl:
+      defaultZone: http://127.0.0.1:1110/eureka/
+    #register-with-eureka: true #属性表示是否将自己注册到Eureka Server， 默认为true
+    #healthcheck:
+    #  enabled: true
+#${spring.application.name} 服务ID
+#${server.port} 端口
+
+spring:
+  cloud:
+    config:
+      fail-fast: false   #客户端快速失败。无法连接配置服务器的时候，不启动服务。也可以通过spring.cloud.config.retry.*配置重试
+      request-read-timeout: 6 #配置读取超时
+      request-connect-timeout: 6 #配置连接超时
+      name: ${spring.application.name}
+      #profile: ${spring.profiles.active}
+      label: master #分支
+      discovery:
+        enabled: true #开启Config服务发现支持（通过注册中心获取配置服务地址）
+        serviceId: springcloud-config-server
+        

@@ -17,13 +17,13 @@ public class DubboAccountService implements IAccountService {
 	private IAccountService accountService;
 	
 	@Override
-	public BaseDto<Serializable> logout(String account, String clientId, String token, String sign) {
-		return accountService.logout(account, clientId, token, sign);
+	public BaseDto<Serializable> logout(String account, String clientId, String token) {
+		return accountService.logout(account, clientId, token);
 	}
 
 	@Override
-	public BaseDto<Serializable> checkToken(String account, String clientId, String token, String sign) {
-		return accountService.checkToken(account, clientId, token, sign);
+	public BaseDto<Serializable> checkToken(String account, String clientId, String token) {
+		return accountService.checkToken(account, clientId, token);
 	}
 
 	@Override

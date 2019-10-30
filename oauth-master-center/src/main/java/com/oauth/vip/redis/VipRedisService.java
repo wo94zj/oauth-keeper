@@ -19,7 +19,7 @@ public class VipRedisService implements IVipCacheService {
     private StringRedisTemplate stringRedisTemplate;
 
     private String key(String clientCode, String account) {
-        return "oauth-" + clientCode + ":" + account;
+        return "oauth-" + ":" + account;
     }
     
 	@Override
