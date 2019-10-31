@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource("classpath:common.properties")
-@ConfigurationProperties(prefix = "common")
-public class CommonConfig {
+@PropertySource("classpath:account.properties")
+@ConfigurationProperties(prefix = "account")
+public class AccountConfig {
 
 	public static long TOKEN_TIMEOUT;	//登陆token过期时间，秒
 	public static long VCODE_TIMEOUT;	//验证码过期时间，秒

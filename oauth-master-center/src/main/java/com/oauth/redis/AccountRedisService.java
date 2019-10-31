@@ -10,7 +10,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import com.oauth.cache.IAccountCacheService;
-import com.oauth.config.CommonConfig;
+import com.oauth.config.AccountConfig;
 import com.oauth.util.StringUtil;
 
 @Service
@@ -31,12 +31,12 @@ public class AccountRedisService implements IAccountCacheService {
 		String key = tokenKey(clientCode, phone);
 		
 		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
-		if(ops.setIfAbsent(key, token, Duration.ofSeconds(CommonConfig.TOKEN_TIMEOUT))) {
+		if(ops.setIfAbsent(key, token, Duration.ofSeconds(AccountConfig.TOKEN_TIMEOUT))) {
 			return token;
 		}
 		
 		//如果已经存在token，刷新过期时间
-		if(!stringRedisTemplate.expire(key, CommonConfig.TOKEN_TIMEOUT, TimeUnit.SECONDS)) {
+		if(!stringRedisTemplate.expire(key, AccountConfig.TOKEN_TIMEOUT, TimeUnit.SECONDS)) {
 			return cacheToken(clientCode, phone, token);
 		}
 		return ops.get(key);
@@ -60,7 +60,7 @@ public class AccountRedisService implements IAccountCacheService {
 		String key = tokenKey(clientCode, phone);
 		
 		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
-		ops.set(key, token, Duration.ofSeconds(CommonConfig.TOKEN_TIMEOUT));
+		ops.set(key, token, Duration.ofSeconds(AccountConfig.TOKEN_TIMEOUT));
         
 		return true;
 	}
@@ -72,7 +72,7 @@ public class AccountRedisService implements IAccountCacheService {
         ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
         String presentToken = ops.get(key);
         if(token.equals(presentToken)) {
-        	stringRedisTemplate.expire(key, CommonConfig.TOKEN_TIMEOUT, TimeUnit.SECONDS);
+        	stringRedisTemplate.expire(key, AccountConfig.TOKEN_TIMEOUT, TimeUnit.SECONDS);
         	return true;
         }
         
@@ -84,7 +84,7 @@ public class AccountRedisService implements IAccountCacheService {
 		String key = vcodeKey(clientCode, phone);
 		
 		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
-		ops.set(key, vcode, CommonConfig.VCODE_TIMEOUT, TimeUnit.SECONDS);
+		ops.set(key, vcode, AccountConfig.VCODE_TIMEOUT, TimeUnit.SECONDS);
 		
 		return vcode;
 	}
