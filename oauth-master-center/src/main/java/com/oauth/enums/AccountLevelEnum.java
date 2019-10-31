@@ -1,6 +1,6 @@
-package com.oauth.vip.enums;
+package com.oauth.enums;
 
-public enum VipLevelEnum {
+public enum AccountLevelEnum {
 
     KEEPER(0), //管理者，只能访问每个内部系统
     INNER(1), //内部用户，每个内部系统都需要授权
@@ -8,7 +8,7 @@ public enum VipLevelEnum {
     
     private Integer type;
     
-    private VipLevelEnum(int type) {
+    private AccountLevelEnum(int type) {
         this.type = type;
     }
 

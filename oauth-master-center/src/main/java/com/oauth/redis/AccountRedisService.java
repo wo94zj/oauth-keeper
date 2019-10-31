@@ -1,4 +1,4 @@
-package com.oauth.vip.redis;
+package com.oauth.redis;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -9,11 +9,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
-import com.oauth.vip.cache.IVipCacheService;
-import com.oauth.vip.config.VipCommonConfig;
+import com.oauth.cache.IAccountCacheService;
+import com.oauth.config.CommonConfig;
 
 @Service
-public class VipRedisService implements IVipCacheService {
+public class AccountRedisService implements IAccountCacheService {
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
@@ -27,12 +27,12 @@ public class VipRedisService implements IVipCacheService {
 		String key = key(clientCode, account);
 		
 		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
-		if(ops.setIfAbsent(key, token, Duration.ofSeconds(VipCommonConfig.TOKEN_TIMEOUT))) {
+		if(ops.setIfAbsent(key, token, Duration.ofSeconds(CommonConfig.TOKEN_TIMEOUT))) {
 			return token;
 		}
 		
 		//如果已经存在token，刷新过期时间
-		if(!stringRedisTemplate.expire(key, VipCommonConfig.TOKEN_TIMEOUT, TimeUnit.SECONDS)) {
+		if(!stringRedisTemplate.expire(key, CommonConfig.TOKEN_TIMEOUT, TimeUnit.SECONDS)) {
 			return cacheToken(clientCode, account, token);
 		}
 		return ops.get(key);
@@ -56,7 +56,7 @@ public class VipRedisService implements IVipCacheService {
 		String key = key(clientId, account);
 		
 		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
-		ops.set(key, token, Duration.ofSeconds(VipCommonConfig.TOKEN_TIMEOUT));
+		ops.set(key, token, Duration.ofSeconds(CommonConfig.TOKEN_TIMEOUT));
         
 		return true;
 	}
@@ -68,7 +68,7 @@ public class VipRedisService implements IVipCacheService {
         ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
         String presentToken = ops.get(key);
         if(token.equals(presentToken)) {
-        	stringRedisTemplate.expire(key, VipCommonConfig.TOKEN_TIMEOUT, TimeUnit.SECONDS);
+        	stringRedisTemplate.expire(key, CommonConfig.TOKEN_TIMEOUT, TimeUnit.SECONDS);
         	return true;
         }
         

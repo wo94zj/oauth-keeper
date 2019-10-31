@@ -1,6 +1,6 @@
-package com.oauth.vip.pojo;
+package com.oauth.pojo;
 
-import com.oauth.vip.enums.ClientTypeEnum;
+import com.oauth.enums.ClientTypeEnum;
 
 import lombok.Data;
 

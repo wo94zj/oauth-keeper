@@ -1,4 +1,4 @@
-package com.oauth.vip.service;
+package com.oauth.service;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -8,7 +8,15 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.oauth.inner.IAccountService;
+import com.oauth.cache.IAccountCacheService;
+import com.oauth.enums.AccountLevelEnum;
+import com.oauth.enums.CommonStatusEnum;
+import com.oauth.mapper.AccountBindMapper;
+import com.oauth.mapper.AccountMapper;
+import com.oauth.mapper.ClientMapper;
+import com.oauth.pojo.Account;
+import com.oauth.pojo.AccountBind;
+import com.oauth.pojo.Client;
 import com.oauth.resp.BaseDto;
 import com.oauth.resp.ResultCode;
 import com.oauth.resp.ResultUtil;
@@ -19,33 +27,23 @@ import com.oauth.util.SHAUtil;
 import com.oauth.util.SecretUtil;
 import com.oauth.util.StringUtil;
 import com.oauth.util.TimeUtil;
-import com.oauth.vip.cache.IVipCacheService;
-import com.oauth.vip.enums.CommonStatusEnum;
-import com.oauth.vip.enums.VipLevelEnum;
-import com.oauth.vip.pojo.Client;
-import com.oauth.vip.pojo.Vip;
-import com.oauth.vip.pojo.VipBind;
-import com.oauth.vip.service.db.ClientService;
-import com.oauth.vip.service.db.VipBindService;
-import com.oauth.vip.service.db.VipService;
 
 @Service(value = "accountService")
-public class AccountService implements IAccountService {
+public class AccountService {
 
 	@Autowired
-	private ClientService clientService;
+	private ClientMapper clientService;
 	@Autowired
-	private VipService vipService;
+	private AccountMapper accountService;
 	@Autowired
-	private VipBindService vipBindService;
+	private AccountBindMapper accountBindService;
 
 	@Autowired
-	private IVipCacheService vipCacheService;
+	private IAccountCacheService accountCacheService;
 
 	/**
 	 * 内部机构接口调用登录
 	 */
-	@Override
 	public BaseDto<Serializable> signLogin(String phone, String clientCode, String sign) {
 		Client client = clientService.selectClientByClientCode(clientCode);
 
@@ -68,36 +66,6 @@ public class AccountService implements IAccountService {
 		}
 
 		return loginValid(phone, password, client);
-		/*VipBind bind = vipBindService.selectVipBindByClientIdAndAccount(clientId, account);
-		// 账户信息判断
-		if (Objects.isNull(bind)) {
-			return ResultUtil.result(ResultCode.UNABLE_LOGIN);
-		}
-		long timestamp = TimeUtil.currentMilli();
-		if(bind.getAuthStopTime() > 0 && bind.getAuthStopTime() < timestamp) {
-			return ResultUtil.result(ResultCode.AUTH_EXPIRE);
-		}
-
-		Vip vip = vipService.selectVipByAccount(account);
-		if (vip.getStatus() == CommonStatusEnum.DISABLED.getStatus()) {
-			return ResultUtil.result(ResultCode.UNABLE_ACOUNT);
-		}
-
-		// 密码验证
-		String sha256 = SHAUtil.SHA256(password + vip.getSalt());
-		if (!vip.getPassword().equals(sha256)) {
-			return ResultUtil.result(ResultCode.CHECK_FAILED);
-		}
-
-		// 获取token
-		String token = MD5Util.md5(clientId + account + time);
-		token = vipCacheService.cacheToken(clientId, account, token);
-
-		HashMap<String, Object> dtoMap = new HashMap<>();
-		dtoMap.put("account", vip.buildAccount());
-		dtoMap.put("token", token);
-
-		return ResultUtil.success(dtoMap);*/
 	}
 	
 	public BaseDto<Serializable> pwdLogin(String phone, String password, String clientCode) {
@@ -112,39 +80,39 @@ public class AccountService implements IAccountService {
 	
 	private BaseDto<Serializable> loginValid(String phone, String password, Client client) {
 		//帐户是否可用
-		Vip vip = vipService.selectVipByPhone(phone);
-		if (vip.getStatus() == CommonStatusEnum.DISABLED.getStatus()) {
+		Account account = accountService.selectAccountByPhone(phone);
+		if (account.getStatus() == CommonStatusEnum.DISABLED.getStatus()) {
 			return ResultUtil.result(ResultCode.UNABLE_ACOUNT);
 		}
 
 		
 		// 密码验证
-		String sha256 = SHAUtil.SHA256(password + vip.getSalt());
-		if (!vip.getPassword().equals(sha256)) {
+		String sha256 = SHAUtil.SHA256(password + account.getSalt());
+		if (!account.getPassword().equals(sha256)) {
 			return ResultUtil.result(ResultCode.CHECK_FAILED);
 		}
 		
 		HashMap<String, Object> dtoMap = new HashMap<>();
-		dtoMap.put("account", vip);
+		dtoMap.put("account", account);
 		
 		// 获取token
 		long timestamp = TimeUtil.currentMilli();
 		String token = MD5Util.md5(client.getClientCode() + phone + timestamp);
-		token = vipCacheService.cacheToken(client.getClientCode(), phone, token);
+		token = accountCacheService.cacheToken(client.getClientCode(), phone, token);
 		dtoMap.put("token", token);
 		
 		//1. 帐户level是否和机构type匹配
 		switch (client.getType()) {
 		case INNER:
 			//内部系统判断内部帐户是否有权限
-			if(VipLevelEnum.INNER.getType().equals(vip.getLevel())) {
-				VipBind vipBind = vipBindService.selectVipBindByClientCodeAndAccountId(client.getClientCode(), vip.getId());
-				if(vipBind.getAuthStopTime().equals(0L)) {//授权时间比较
+			if(AccountLevelEnum.INNER.getType().equals(account.getLevel())) {
+				AccountBind accountBind = accountBindService.selectAccountBindByClientCodeAndAccountId(client.getClientCode(), account.getId());
+				if(accountBind.getAuthStopTime().equals(0L)) {//授权时间比较
 					return ResultUtil.success(dtoMap);
 				}
 				
 				return ResultUtil.result(ResultCode.AUTH_EXPIRE);
-			}else if (VipLevelEnum.KEEPER.getType().equals(vip.getLevel())) {
+			}else if (AccountLevelEnum.KEEPER.getType().equals(account.getLevel())) {
 				return ResultUtil.success(dtoMap);
 			}
 			
@@ -153,7 +121,7 @@ public class AccountService implements IAccountService {
 			//提示需要用户授权
 			break;
 		case EXTER:
-			if(VipLevelEnum.EXTER.getType().equals(vip.getLevel())) {
+			if(AccountLevelEnum.EXTER.getType().equals(account.getLevel())) {
 				return ResultUtil.success(dtoMap);
 			}
 			
@@ -165,52 +133,50 @@ public class AccountService implements IAccountService {
 		return ResultUtil.result(ResultCode.CHECK_FAILED);
 	}
 
-	public BaseDto<Serializable> verificationCodeLogin(String phone, String password, String clientCode) {
+	public BaseDto<Serializable> vcodeLogin(String phone, String vcode, String clientCode) {
 		Client client = clientService.selectClientByClientCode(clientCode);
 		// 客户端是否可用
 		if (Objects.isNull(client) || client.getStatus() == CommonStatusEnum.DISABLED.getStatus()) {
 			return ResultUtil.result(ResultCode.UNABLE_CLIENT);
 		}
 		
-		Vip vip = vipService.selectVipByPhone(phone);
-		if(Objects.isNull(vip)) {
-			vip = new Vip();
-			vip.setPhone(phone);
-			vip.setLevel(VipLevelEnum.EXTER.getType());
-			vip.setStatus(CommonStatusEnum.USABLE.getStatus());
+		Account account = accountService.selectAccountByPhone(phone);
+		if(Objects.isNull(account)) {
+			account = new Account();
+			account.setPhone(phone);
+			account.setLevel(AccountLevelEnum.EXTER.getType());
+			account.setStatus(CommonStatusEnum.USABLE.getStatus());
 			long time = TimeUtil.currentMilli();
-			vip.setUpdateTime(time);
-			vip.setCreateTime(time);
-			int vipResult = vipService.insertVip(vip);
-			if(vipResult <= 0) {
+			account.setUpdateTime(time);
+			account.setCreateTime(time);
+			int accountResult = accountService.insertAccount(account);
+			if(accountResult <= 0) {
 				return ResultUtil.failed();
 			}
 		}
 		
 		HashMap<String, Object> dtoMap = new HashMap<>();
-		dtoMap.put("account", vip);
+		dtoMap.put("account", account);
 		
 		// 获取token
 		long timestamp = TimeUtil.currentMilli();
 		String token = MD5Util.md5(client.getClientCode() + phone + timestamp);
-		token = vipCacheService.cacheToken(client.getClientCode(), phone, token);
+		token = accountCacheService.cacheToken(client.getClientCode(), phone, token);
 		dtoMap.put("token", token);
 		
 		return ResultUtil.success(dtoMap);
 	}
 	
-	@Override
 	public BaseDto<Serializable> logout(String account, String clientCode, String token) {
-		if(vipCacheService.delToken(clientCode, account, token)) {
+		if(accountCacheService.delToken(clientCode, account, token)) {
 			return ResultUtil.success();
 		}
 		
 		return ResultUtil.failed();
 	}
 
-	@Override
 	public BaseDto<Serializable> checkToken(String account, String clientCode, String token) {
-		if(vipCacheService.checkToken(clientCode, account, token)) {
+		if(accountCacheService.checkToken(clientCode, account, token)) {
 			return ResultUtil.success();
 		}
 		
@@ -220,23 +186,23 @@ public class AccountService implements IAccountService {
 	/**
 	 * 外部用户需要走注册
 	 */
-	public BaseDto<Serializable> register(Vip vip, String clientCode) {
-		vip.setLevel(VipLevelEnum.EXTER.getType());
-		vip.setStatus(CommonStatusEnum.USABLE.getStatus());
-		vip.setSalt(SecretUtil.salt());
-		vip.setPassword(SHAUtil.SHA256(vip.getPassword() + vip.getSalt()));
+	public BaseDto<Serializable> register(Account account, String clientCode) {
+		account.setLevel(AccountLevelEnum.EXTER.getType());
+		account.setStatus(CommonStatusEnum.USABLE.getStatus());
+		account.setSalt(SecretUtil.salt());
+		account.setPassword(SHAUtil.SHA256(account.getPassword() + account.getSalt()));
 		long time = TimeUtil.currentMilli();
-		vip.setUpdateTime(time);
-		vip.setCreateTime(time);
-		if(StringUtil.isBlank(vip.getNickname())) {
+		account.setUpdateTime(time);
+		account.setCreateTime(time);
+		if(StringUtil.isBlank(account.getNickname())) {
 			
 		}
-		if(StringUtil.isBlank(vip.getImg())) {
+		if(StringUtil.isBlank(account.getImg())) {
 			
 		}
 		
-		int vipResult = vipService.insertVip(vip);
-		if(vipResult > 0) {
+		int accountResult = accountService.insertAccount(account);
+		if(accountResult > 0) {
 			return ResultUtil.success();
 		}
 		return ResultUtil.failed();

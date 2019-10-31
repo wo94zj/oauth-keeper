@@ -1,4 +1,4 @@
-package com.oauth.vip.enums;
+package com.oauth.enums;
 
 public enum CommonStatusEnum {
 

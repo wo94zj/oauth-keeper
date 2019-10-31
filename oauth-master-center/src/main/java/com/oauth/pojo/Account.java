@@ -1,8 +1,6 @@
-package com.oauth.vip.pojo;
+package com.oauth.pojo;
 
 import java.io.Serializable;
-
-import com.oauth.dto.Account;
 
 import lombok.Data;
 
@@ -11,7 +9,7 @@ import lombok.Data;
  *
  */
 @Data
-public class Vip implements Serializable {
+public class Account implements Serializable {
 
     private static final long serialVersionUID = -1584452090599765954L;
     
@@ -27,7 +25,7 @@ public class Vip implements Serializable {
     
     private String phone;	//手机号
     
-    private Integer level;	//用户标记，见VipLevelEnum
+    private Integer level;	//用户标记，见AccountLevelEnum
     
     private Integer status;
     
@@ -36,10 +34,5 @@ public class Vip implements Serializable {
     
     public interface Create{}
     
-    public Account buildAccount() {
-    	Account account =  new Account();
-    	account.setNickname(nickname);
-    	account.setImg(img);
-    	return account;
-	}
+    
 }

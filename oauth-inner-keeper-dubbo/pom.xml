@@ -18,7 +18,11 @@
 		<artifactId>oauth-master-center</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</dependency>
-	
+	<dependency>
+		<groupId>com.oauth</groupId>
+		<artifactId>oauth-inner-ikeeper</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</dependency>
 	
 	<!-- dubbo-spring依赖 -->
 	<dependency>

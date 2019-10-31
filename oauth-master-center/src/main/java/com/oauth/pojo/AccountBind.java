@@ -1,4 +1,4 @@
-package com.oauth.vip.pojo;
+package com.oauth.pojo;
 
 import java.io.Serializable;
 
@@ -9,7 +9,7 @@ import lombok.Data;
  *
  */
 @Data
-public class VipBind implements Serializable {
+public class AccountBind implements Serializable {
     
     private static final long serialVersionUID = -6714493783060675694L;
 

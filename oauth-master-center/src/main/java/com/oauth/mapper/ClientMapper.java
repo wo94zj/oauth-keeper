@@ -1,9 +1,9 @@
-package com.oauth.vip.mapper;
+package com.oauth.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
-import com.oauth.vip.pojo.Client;
+import com.oauth.pojo.Client;
 
 @Mapper
 public interface ClientMapper {

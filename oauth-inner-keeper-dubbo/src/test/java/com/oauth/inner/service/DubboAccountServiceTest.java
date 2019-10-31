@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.oauth.service.AccountService;
 import com.oauth.util.AESUtil;
 import com.oauth.util.TimeUtil;
-import com.oauth.vip.service.AccountService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest

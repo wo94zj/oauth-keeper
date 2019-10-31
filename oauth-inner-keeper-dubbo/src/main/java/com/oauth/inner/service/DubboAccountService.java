@@ -8,13 +8,14 @@ import org.springframework.stereotype.Component;
 
 import com.oauth.inner.IAccountService;
 import com.oauth.resp.BaseDto;
+import com.oauth.service.AccountService;
 
 @Service(interfaceClass = IAccountService.class, version = "v1.0")
 @Component(value = "dubboAccountService")
 public class DubboAccountService implements IAccountService {
 
 	@Autowired
-	private IAccountService accountService;
+	private AccountService accountService;
 	
 	@Override
 	public BaseDto<Serializable> logout(String account, String clientId, String token) {
