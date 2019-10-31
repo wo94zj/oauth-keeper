@@ -67,8 +67,8 @@ dubbo调用接口
 | id          | bigint(20)   | N    | 自增     | 主键                                            |
 | nickname    | varchar(50)  | N    | 规则生成 | 昵称                                            |
 | img         | varchar(255) | N    | 默认图片 | 头像地址                                        |
-| password    | varchar(255) | N    | 无       | sha256(password+salt)                           |
-| salt        | varchar(255) | N    | 随机     | 盐                                              |
+| password    | char(64)     | N    | 无       | sha256(password+salt)                           |
+| salt        | char(32)     | N    | 随机     | 盐                                              |
 | phone       | char(11)     | N    |          | 手机号                                          |
 | level       | tinyint(2)   | N    | 2        | 用户级别（0：管理者；1：内部用户；2：外部用户） |
 | status      | tinyint(2)   | N    | 1        | 状态（1：可用；-1：不可用）                     |

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.oauth.resp.BaseDto;
+import com.oauth.resp.ResultUtil;
 import com.oauth.service.AccountService;
 
 @RestController
@@ -39,8 +40,12 @@ public class AccountController {
 	}
 	
 	@RequestMapping(value = "/login/vcode", method = RequestMethod.POST)
-	public BaseDto<Serializable> vcodeLogin(String phone, String vcode, String clientCode){
+	public BaseDto<Serializable> vcodeLogin(@RequestParam String phone, @RequestParam String vcode, @RequestParam String clientCode){
 		return accountService.vcodeLogin(phone, vcode, clientCode);
 	}
 	
+	@RequestMapping(value = "/vcode", method = RequestMethod.POST)
+	public BaseDto<String> createVcode(@RequestParam String phone, @RequestParam String clientCode) {
+		return ResultUtil.success(accountService.createVcode(phone, clientCode));
+	}
 }

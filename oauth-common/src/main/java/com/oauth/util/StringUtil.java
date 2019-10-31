@@ -54,4 +54,11 @@ public class StringUtil {
 		}
 		return new String(chs, 0, count);
 	}
+	
+	/**
+	 * 重复字符串numb次
+	 */
+	public static String repeat(String repeat, int numb) {
+		return new String(new char[numb]).replace("\0", repeat);
+	}
 }

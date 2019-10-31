@@ -29,6 +29,7 @@ public class ResultMsgConstant {
 	public static String UNABLE_ACOUNT = PREFIX + "unable.unaccount" + SUFFIX;
     public static String UNABLE_LOGIN = PREFIX + "unable.login" + SUFFIX;
     public static String AUTH_EXPIRE = PREFIX + "auth.expire" + SUFFIX;
+    public static String UNABLE_VCODE = PREFIX + "unable.vcode" + SUFFIX;
     public static String CHECK_FAILED = PREFIX + "check.failed" + SUFFIX;
     public static String UNABLE_CLIENT = PREFIX + "unable.client" + SUFFIX;
     public static String UNABLE_SECRET = PREFIX + "unable.secret" + SUFFIX;
@@ -58,6 +59,7 @@ public class ResultMsgConstant {
 		UNABLE_ACOUNT = res.getString(UNABLE_ACOUNT);
 		UNABLE_LOGIN = res.getString(UNABLE_LOGIN);
 		AUTH_EXPIRE = res.getString(AUTH_EXPIRE);
+		UNABLE_VCODE = res.getString(UNABLE_VCODE);
 		CHECK_FAILED = res.getString(CHECK_FAILED);
 		UNABLE_CLIENT = res.getString(UNABLE_CLIENT);
 		UNABLE_SECRET = res.getString(UNABLE_SECRET);

@@ -22,6 +22,7 @@ public enum ResultCode {
     UNABLE_ACOUNT(11000, ResultMsgConstant.UNABLE_ACOUNT),
     UNABLE_LOGIN(11001, ResultMsgConstant.UNABLE_LOGIN),
     AUTH_EXPIRE(11002, ResultMsgConstant.AUTH_EXPIRE),
+    UNABLE_VCODE(11003, ResultMsgConstant.UNABLE_VCODE),
     CHECK_FAILED(11010, ResultMsgConstant.CHECK_FAILED),
     UNABLE_CLIENT(11011, ResultMsgConstant.UNABLE_CLIENT),
     UNABLE_SECRET(11020, ResultMsgConstant.UNABLE_SECRET);

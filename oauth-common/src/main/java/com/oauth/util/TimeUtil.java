@@ -1,6 +1,5 @@
 package com.oauth.util;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,12 +10,20 @@ import java.util.Date;
 
 public class TimeUtil {
 
-	private static ZoneOffset ZONEOFFSET = ZoneOffset.of("+8");
+private static ZoneOffset ZONEOFFSET = ZoneOffset.of("+8");
 	
 	public static DateTimeFormatter FULLY_DIGITAL = new DateTimeFormatterBuilder().appendPattern("yyyyMMddHHmmss").toFormatter();
 	
+	
+	/**
+	 * 当前时间
+	 */
 	public static long currentMilli() {
 		return LocalDateTime.now().toInstant(ZONEOFFSET).toEpochMilli();
+	}
+	
+	public static Date currentDate() {
+		return Date.from(LocalDateTime.now().toInstant(ZONEOFFSET));
 	}
 	
 	public static long unixTimeStamp() {
@@ -27,30 +34,44 @@ public class TimeUtil {
 		return LocalDateTime.now().format(FULLY_DIGITAL);
 	}
 	
+	
+	/**
+	 * 当日最后时间点
+	 */
 	public static Date dateLastTime(Date date) {
-		LocalDate localDate = date.toInstant().atZone(ZONEOFFSET).toLocalDate();
-		return Date.from(LocalDateTime.of(localDate.getYear(), localDate.getMonth(), localDate.getDayOfMonth(), 23, 59, 59).toInstant(ZONEOFFSET));
+		LocalDate ld = date.toInstant().atZone(ZONEOFFSET).toLocalDate();
+		return Date.from(LocalDateTime.of(ld.getYear(), ld.getMonth(), ld.getDayOfMonth(), 23, 59, 59).toInstant(ZONEOFFSET));
 	}
 	
-	public static long secondInterval(Date d1, Date d2) {
-		return Duration.between(d1.toInstant(), d2.toInstant()).getSeconds();
+	
+	/**
+	 * 时间格式化
+	 */
+	public static String milliFormat(long time, DateTimeFormatter formatter) {
+		return milliToLdt(time).format(formatter);
 	}
 	
-	public static long secondInterval(long d1, long d2) {
-		return Duration.between(Instant.ofEpochMilli(d1), Instant.ofEpochMilli(d2)).getSeconds();
+	public static String dateFormat(Date date, DateTimeFormatter formatter) {
+		return dateToLdt(date).format(formatter);
 	}
 	
-	public static Date delay24Hour(Date date) {
-		LocalDateTime time = LocalDateTime.ofInstant(date.toInstant(), ZONEOFFSET);
-		return Date.from(time.plusDays(1).toInstant(ZONEOFFSET));
+	
+	/**
+	 * 时间类型转换
+	 */
+	public static LocalDateTime dateToLdt(Date date) {
+		return LocalDateTime.ofInstant(date.toInstant(), ZONEOFFSET);
 	}
 	
-	public static long delay24Hour(long date) {
-		LocalDateTime time = LocalDateTime.ofInstant(Instant.ofEpochMilli(date), ZONEOFFSET);
-		return time.plusDays(1).toInstant(ZONEOFFSET).toEpochMilli();
+	public static Date ldtToDate(LocalDateTime ldt) {
+		return Date.from(ldt.toInstant(ZONEOFFSET));
 	}
 	
-	public static String longFormat(long time, DateTimeFormatter formatter) {
-		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZONEOFFSET).format(formatter);
+	public static LocalDateTime milliToLdt(long time) {
+		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZONEOFFSET);
+	}
+	
+	public static long ldtToMilli(LocalDateTime ldt) {
+		return ldt.toInstant(ZONEOFFSET).toEpochMilli();
 	}
 }

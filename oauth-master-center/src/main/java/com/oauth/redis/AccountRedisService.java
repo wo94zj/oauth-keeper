@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.oauth.cache.IAccountCacheService;
 import com.oauth.config.CommonConfig;
+import com.oauth.util.StringUtil;
 
 @Service
 public class AccountRedisService implements IAccountCacheService {
@@ -18,13 +19,16 @@ public class AccountRedisService implements IAccountCacheService {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    private String key(String clientCode, String account) {
-        return "oauth-" + ":" + account;
+    private String tokenKey(String clientCode, String account) {
+        return "oauth-token" + ":" + account;
+    }
+    private String vcodeKey(String clientCode, String account) {
+        return "oauth-vcode" + ":" + account;
     }
     
 	@Override
-	public String cacheToken(String clientCode, String account, String token) {
-		String key = key(clientCode, account);
+	public String cacheToken(String clientCode, String phone, String token) {
+		String key = tokenKey(clientCode, phone);
 		
 		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
 		if(ops.setIfAbsent(key, token, Duration.ofSeconds(CommonConfig.TOKEN_TIMEOUT))) {
@@ -33,14 +37,14 @@ public class AccountRedisService implements IAccountCacheService {
 		
 		//如果已经存在token，刷新过期时间
 		if(!stringRedisTemplate.expire(key, CommonConfig.TOKEN_TIMEOUT, TimeUnit.SECONDS)) {
-			return cacheToken(clientCode, account, token);
+			return cacheToken(clientCode, phone, token);
 		}
 		return ops.get(key);
 	}
 
 	@Override
-	public boolean delToken(String clientId, String account, String token) {
-		String key = key(clientId, account);
+	public boolean delToken(String clientCode, String phone, String token) {
+		String key = tokenKey(clientCode, phone);
 		
 		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
         String presentToken = ops.get(key);
@@ -52,8 +56,8 @@ public class AccountRedisService implements IAccountCacheService {
 	}
 
 	@Override
-	public boolean resetToken(String clientId, String account, String token) {
-		String key = key(clientId, account);
+	public boolean resetToken(String clientCode, String phone, String token) {
+		String key = tokenKey(clientCode, phone);
 		
 		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
 		ops.set(key, token, Duration.ofSeconds(CommonConfig.TOKEN_TIMEOUT));
@@ -62,8 +66,8 @@ public class AccountRedisService implements IAccountCacheService {
 	}
 
 	@Override
-	public boolean checkToken(String clientId, String account, String token) {
-		String key = key(clientId, account);
+	public boolean checkToken(String clientCode, String phone, String token) {
+		String key = tokenKey(clientCode, phone);
 		
         ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
         String presentToken = ops.get(key);
@@ -73,6 +77,29 @@ public class AccountRedisService implements IAccountCacheService {
         }
         
 		return false;
+	}
+
+	@Override
+	public String cacheVcode(String clientCode, String phone, String vcode) {
+		String key = vcodeKey(clientCode, phone);
+		
+		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
+		ops.set(key, vcode, CommonConfig.VCODE_TIMEOUT, TimeUnit.SECONDS);
+		
+		return vcode;
+	}
+
+	@Override
+	public boolean checkVcode(String clientCode, String phone, String vcode) {
+		String key = vcodeKey(clientCode, phone);
+		
+        ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
+        String presentVcode = ops.get(key);
+        if(StringUtil.isBlank(presentVcode) || !presentVcode.equals(vcode)) {
+        	return false;
+        }
+        
+		return true;
 	}
     
 }

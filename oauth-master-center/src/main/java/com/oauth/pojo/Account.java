@@ -2,6 +2,9 @@ package com.oauth.pojo;
 
 import java.io.Serializable;
 
+import com.oauth.enums.AccountLevelEnum;
+import com.oauth.enums.CommonStatusEnum;
+
 import lombok.Data;
 
 /**
@@ -34,5 +37,9 @@ public class Account implements Serializable {
     
     public interface Create{}
     
+    public void buildAccount() {
+    	this.level = AccountLevelEnum.EXTER.getType();
+    	this.status = CommonStatusEnum.USABLE.getStatus();
+	}
     
 }

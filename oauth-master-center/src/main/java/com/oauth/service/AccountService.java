@@ -134,6 +134,10 @@ public class AccountService {
 	}
 
 	public BaseDto<Serializable> vcodeLogin(String phone, String vcode, String clientCode) {
+		if(!accountCacheService.checkVcode(clientCode, phone, vcode)) {
+			return ResultUtil.result(ResultCode.UNABLE_VCODE);
+		}
+		
 		Client client = clientService.selectClientByClientCode(clientCode);
 		// 客户端是否可用
 		if (Objects.isNull(client) || client.getStatus() == CommonStatusEnum.DISABLED.getStatus()) {
@@ -167,21 +171,27 @@ public class AccountService {
 		return ResultUtil.success(dtoMap);
 	}
 	
-	public BaseDto<Serializable> logout(String account, String clientCode, String token) {
-		if(accountCacheService.delToken(clientCode, account, token)) {
+	public BaseDto<Serializable> logout(String phone, String clientCode, String token) {
+		if(accountCacheService.delToken(clientCode, phone, token)) {
 			return ResultUtil.success();
 		}
 		
 		return ResultUtil.failed();
 	}
 
-	public BaseDto<Serializable> checkToken(String account, String clientCode, String token) {
-		if(accountCacheService.checkToken(clientCode, account, token)) {
+	public BaseDto<Serializable> checkToken(String phone, String clientCode, String token) {
+		if(accountCacheService.checkToken(clientCode, phone, token)) {
 			return ResultUtil.success();
 		}
 		
 		return ResultUtil.failed();
 	}
+	
+	public String createVcode(String phone, String clientCode) {
+		String vcode = SecretUtil.numeric(6);
+		return accountCacheService.cacheVcode(clientCode, phone, vcode);
+	}
+	
 
 	/**
 	 * 外部用户需要走注册
